@@ -4,43 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Sheets Data</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <h1>Google Sheets Data</h1>
     
-    <ul id="data-list"></ul>
+    <table id="data-table">
+        <thead>
+            <tr id="header-row"></tr>
+        </thead>
+        <tbody id="data-body"></tbody>
+    </table>
 
     <script src="https://apis.google.com/js/api.js"></script>
     <script>
-        function init() {
+        // Load Sheets API
+        gapi.load('client', loadSheetsApi);
+
+        function loadSheetsApi() {
             gapi.client.init({
                 apiKey: 'AIzaSyANdbEb_R9E-tXldeDDoMTRfFX54NECou4', // Thay YOUR_API_KEY bằng API key của bạn
                 discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
             }).then(function() {
-                return gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: '1iUAs92Pch9a6W7CAP8UDoN6OjMn7xL_5duc-WykPWnM', // Thay YOUR_SPREADSHEET_ID bằng ID của bảng tính
-                    range: 'Coppy_Sheet1!A1:C10' // Thay SHEET_NAME!A1:C10 bằng phạm vi dữ liệu bạn muốn lấy
-                });
+                fetchSheetData();
+            });
+        }
+
+        function fetchSheetData() {
+            gapi.client.sheets.spreadsheets.values.get({
+                spreadsheetId: '1iUAs92Pch9a6W7CAP8UDoN6OjMn7xL_5duc-WykPWnM', // Thay YOUR_SPREADSHEET_ID bằng ID của bảng tính
+                range: 'Coppy_Sheet1!A1:G' // Thay Sheet1!A1:G bằng phạm vi dữ liệu bạn muốn lấy
             }).then(function(response) {
                 var values = response.result.values;
-                var dataList = document.getElementById('data-list');
 
                 if (values && values.length > 0) {
-                    values.forEach(function(row) {
-                        var listItem = document.createElement('li');
-                        listItem.textContent = `Name: ${row[0]}, Age: ${row[1]}, Email: ${row[2]}`;
-                        dataList.appendChild(listItem);
+                    var headerRow = values[0]; // Lấy dòng đầu tiên làm tiêu đề
+                    var dataRows = values.slice(1); // Bỏ qua dòng đầu tiên vì là tiêu đề
+
+                    // Hiển thị tiêu đề
+                    var headerRowElement = document.getElementById('header-row');
+                    headerRow.forEach(function(cellValue) {
+                        var th = document.createElement('th');
+                        th.textContent = cellValue;
+                        headerRowElement.appendChild(th);
+                    });
+
+                    // Hiển thị dữ liệu
+                    var dataBodyElement = document.getElementById('data-body');
+                    dataRows.forEach(function(row) {
+                        var tr = document.createElement('tr');
+                        row.forEach(function(cellValue) {
+                            var td = document.createElement('td');
+                            td.textContent = cellValue;
+                            tr.appendChild(td);
+                        });
+                        dataBodyElement.appendChild(tr);
                     });
                 } else {
                     console.log('No data found.');
                 }
             }, function(error) {
-                console.log('Error loading Google Sheets API:', error);
+                console.error('Error loading Google Sheets API:', error);
             });
         }
-
-        // Load Sheets API và gọi hàm init khi đã load xong
-        gapi.load('client', init);
     </script>
 </body>
 </html>
