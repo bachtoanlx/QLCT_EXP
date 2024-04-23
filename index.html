@@ -10,20 +10,29 @@
 
     <style>
         /* Định dạng cho bảng dữ liệu */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center; /* Canh giữa nội dung theo chiều ngang */
-            vertical-align: middle; /* Canh giữa nội dung theo chiều dọc */
-        }
-        th {
-            background-color: #3498db;
-            color: white;
-        }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+                vertical-align: middle;
+                width: auto; /* Đặt chiều rộng tự động cho cả thẻ th và td */
+            }
+
+            th {
+                background-color: #3498db;
+                color: white;
+            }
+
+            }
+
+            .hidden-column {
+                display: none; /* Ẩn các ô dữ liệu có class 'hidden-column' */
+            }
     </style>
 </head>
 <body>
@@ -61,6 +70,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
     var isExpanded = false; // Theo dõi trạng thái dữ liệu (đã được mở rộng hay thu gọn)
+    var columnsToHide = [2, 3]; // Chỉ số của các cột bạn muốn ẩn (tính từ 0)
 
     // Load Sheets API
     gapi.load('client', loadSheetsApi);
@@ -76,8 +86,8 @@
 
     function fetchSheetData() {
         gapi.client.sheets.spreadsheets.values.get({
-            spreadsheetId: '1iUAs92Pch9a6W7CAP8UDoN6OjMn7xL_5duc-WykPWnM',
-            range: 'Coppy_Sheet1!A1:G'
+            spreadsheetId: '1OXbNo346jP4bim7gnjbvKR8wyslJ6pxOC5P_Iiik43Q',
+            range: 'Sheet1!A1:G'
         }).then(function(response) {
             var values = response.result.values;
 
@@ -87,10 +97,12 @@
 
                 // Hiển thị tiêu đề
                 var headerRowElement = document.getElementById('header-row');
-                headerRow.forEach(function(cellValue) {
-                    var th = document.createElement('th');
-                    th.textContent = cellValue;
-                    headerRowElement.appendChild(th);
+                headerRow.forEach(function(cellValue, index) {
+                    if (!columnsToHide.includes(index)) {
+                        var th = document.createElement('th');
+                        th.textContent = cellValue;
+                        headerRowElement.appendChild(th);
+                    }
                 });
 
                 // Hiển thị dữ liệu ban đầu (chỉ 5 dòng đầu)
@@ -126,15 +138,18 @@
         // Hiển thị dữ liệu mới
         rows.forEach(function(row) {
             var tr = document.createElement('tr');
-            row.forEach(function(cellValue) {
-                var td = document.createElement('td');
-                td.textContent = cellValue;
-                tr.appendChild(td);
+            row.forEach(function(cellValue, index) {
+                if (!columnsToHide.includes(index)) {
+                    var td = document.createElement('td');
+                    td.textContent = cellValue;
+                    tr.appendChild(td);
+                }
             });
             dataBodyElement.appendChild(tr);
         });
     }
 });
-</script>
+
+    </script>
 </body>
 </html>
